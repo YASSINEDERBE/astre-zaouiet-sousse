@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier des Matches - Astre Zaouiet Sousse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #006600;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #ffffff;
+            border-bottom: 4px solid #006600;
+        }
+        nav a {
+            color: #006600;
+            padding: 15px 20px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        nav a:hover {
+            background-color: #ccffcc;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #006600;
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+        }
+        th {
+            background-color: #006600;
+            color: white;
+        }
+        .form {
+            margin: 20px auto;
+            padding: 10px;
+            width: 50%;
+            background-color: #ccffcc;
+            border: 1px solid #006600;
+        }
+        .form input, .form select {
+            padding: 10px;
+            margin: 5px;
+            width: 80%;
+        }
+        .form button {
+            padding: 10px;
+            background-color: #006600;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .form button:hover {
+            background-color: #004d00;
+        }
+        .editable {
+            background-color: #e6ffe6;
+            cursor: text;
+        }
+        .editable input, .editable select {
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Calendrier des Matches - Astre Zaouiet Sousse</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Accueil</a>
+        <a href="categories.html">Catégories</a>
+    </nav>
+
+    <div class="content">
+        <h2>Ajouter un match</h2>
+        <div class="form">
+            <form id="matchForm">
+                <input type="text" id="date" placeholder="Date du match (jj/mm/aaaa)" required><br>
+                <input type="text" id="adversaire" placeholder="Adversaire" required><br>
+                <input type="text" id="lieu" placeholder="Lieu" required><br>
+                <select id="categorie" required>
+                    <option value="" disabled selected>Choisir la catégorie</option>
+                    <option value="École">École</option>
+                    <option value="Minim">Minim</option>
+
+                    <option value="Cadet">Cadet</option>
+                    <option value="Junior">Junior</option>
+                    <option value="Senior">Senior</option>
+                </select><br>
+                <button type="submit">Ajouter le Match</button>
+            </form>
+        </div>
+
+        <h2>Liste des Matches à venir</h2>
+        <table id="matchTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Adversaire</th>
+                    <th>Lieu</th>
+                    <th>Catégorie</th>
+                    <th>Résultat</th>
+                    <th>État</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les lignes des matchs seront insérées ici -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Sélection des éléments
+        const form = document.getElementById('matchForm');
+        const matchTable = document.getElementById('matchTable').getElementsByTagName('tbody')[0];
+
+        // Fonction pour charger les matchs depuis le localStorage
+        function loadMatches() {
+            const storedMatches = localStorage.getItem('matches');
+            if (storedMatches) {
+                const matches = JSON.parse(storedMatches);
+                matches.forEach(match => {
+                    addMatchToTable(match.date, match.adversaire, match.lieu, match.categorie, match.resultat || 'N/A', match.etat || 'Pas encore');
+                });
+            }
+        }
+
+        // Fonction pour ajouter un match au tableau et dans le localStorage
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();  // Empêche le rechargement de la page
+
+            // Récupération des valeurs saisies
+            const date = document.getElementById('date').value;
+            const adversaire = document.getElementById('adversaire').value;
+            const lieu = document.getElementById('lieu').value;
+            const categorie = document.getElementById('categorie').value;
+
+            // Vérification que les champs obligatoires sont remplis
+            if (date === '' || adversaire === '' || lieu === '' || categorie === '') {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            // Ajouter le match au tableau
+            addMatchToTable(date, adversaire, lieu, categorie, 'N/A', 'Pas encore');
+
+            // Sauvegarder le match dans le localStorage
+            saveMatch(date, adversaire, lieu, categorie, 'N/A', 'Pas encore');
+
+            // Réinitialisation du formulaire après l'ajout
+            form.reset();
+        });
+
+        // Fonction pour ajouter un match dans le tableau
+        function addMatchToTable(date, adversaire, lieu, categorie, resultat, etat) {
+            const newRow = matchTable.insertRow();
+
+            const dateCell = newRow.insertCell(0);
+            const adversaireCell = newRow.insertCell(1);
+            const lieuCell = newRow.insertCell(2);
+            const categorieCell = newRow.insertCell(3);
+            const resultatCell = newRow.insertCell(4);
+            const etatCell = newRow.insertCell(5);
+
+            dateCell.textContent = date;
+            adversaireCell.textContent = adversaire;
+            lieuCell.textContent = lieu;
+            categorieCell.textContent = categorie;
+            resultatCell.innerHTML = `<input type="text" value="${resultat}" class="editable">`;
+            etatCell.innerHTML = `<select class="editable">
+                                                      <option value="Pas encore" ${etat === 'Pas encore' ? 'selected' : ''}>Pas encore</option>
+
+                                      <option value="Complet" ${etat === 'Complet' ? 'selected' : ''}>Complet</option>
+                                      <option value="Reporté" ${etat === 'Reporté' ? 'selected' : ''}>Reporté</option>
+                                   </select>`;
+
+            // Ajouter des événements pour sauvegarder les modifications
+            resultatCell.querySelector('input').addEventListener('blur', updateLocalStorage);
+            etatCell.querySelector('select').addEventListener('change', updateLocalStorage);
+
+            // Fonction pour mettre à jour le localStorage lors des modifications
+            function updateLocalStorage() {
+                const rows = matchTable.getElementsByTagName('tr');
+                const matches = [];
+
+                for (let i = 0; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    if (cells.length > 0) {
+                        matches.push({
+                            date: cells[0].textContent,
+                            adversaire: cells[1].textContent,
+                            lieu: cells[2].textContent,
+                            categorie: cells[3].textContent,
+                            resultat: cells[4].querySelector('input').value,
+                            etat: cells[5].querySelector('select').value
+                        });
+                    }
+                }
+                localStorage.setItem('matches', JSON.stringify(matches));
+            }
+        }
+
+        // Fonction pour sauvegarder un match dans le localStorage
+        function saveMatch(date, adversaire, lieu, categorie, resultat, etat) {
+            const storedMatches = localStorage.getItem('matches');
+            let matches = [];
+
+            if (storedMatches) {
+                matches = JSON.parse(storedMatches);
+            }
+
+            matches.push({ date, adversaire, lieu, categorie, resultat, etat });
+            localStorage.setItem('matches', JSON.stringify(matches));
+        }
+
+        // Charger les matchs à l'ouverture de la page
+        window.onload = function() {
+            loadMatches();
+        }
+    </script>
+
+</body>
+</html>
